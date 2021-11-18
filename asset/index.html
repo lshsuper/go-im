@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>Socket.IO chat</title>
+    <title>聊天室</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font: 13px Helvetica, Arial; }
@@ -32,7 +32,7 @@
     $(function (){
 
 
-        const socket = io("ws://localhost:8000");
+        const socket = io("ws://:8000");
 
         socket.on("connect", () => {
             socket.emit('join',"lsh-group",function (data){
