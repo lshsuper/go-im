@@ -32,7 +32,7 @@
     $(function (){
 
 
-        const socket = io("ws://:8000");
+        const socket = io("ws://180.76.103.137");
 
         socket.on("connect", () => {
             socket.emit('join',"lsh-group",function (data){
