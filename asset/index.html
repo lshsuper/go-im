@@ -1,14 +1,14 @@
 <!doctype html>
 <html>
 <head>
-    <meta name=”viewport” content=”width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes” />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
     <title>聊天室</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font: 13px Helvetica, Arial; }
         #frm { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-        #frm input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-        #frm button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+        #frm input { border: 0; padding: 10px; width: 80%; margin-right: .5%; }
+        #frm button { width: 19%; background: rgb(130, 224, 255); border: none; padding: 10px; }
         #messages { list-style-type: none; margin: 0; padding: 0; }
         #messages li { padding: 5px 10px; }
         #messages li:nth-child(odd) { background: #eee; }
@@ -21,7 +21,7 @@
     </style>
 </head>
 <body>
-<div id="num_show">当前在线人数:<strong id="p_num"></strong></div>
+<div id="num_show">当前在线人数:<strong id="p_num">0</strong></div>
 <ul id="messages"></ul>
 <div id="frm">
     <input id="m" autocomplete="off" /><button id="send">Send</button>
@@ -33,7 +33,7 @@
     $(function (){
 
 
-         //const socket = io("http://localhost:8000");
+        // const socket = io("http://localhost:8000");
         const socket = io("http://180.76.103.137");
 
         socket.on("connect", () => {
