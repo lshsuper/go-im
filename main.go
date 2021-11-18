@@ -19,7 +19,7 @@ func main() {
 
 	xredis.Register()
     xredis.RedisFatory.Set(domain.RedisOpt{
-		Pwd: "honghe@2020",
+		Pwd: "nicaia",
 		PoolSize: 100,
 		Addr: ":6379",
 		Tag:"Simple",
