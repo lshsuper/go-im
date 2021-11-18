@@ -28,35 +28,38 @@ func main() {
 
 	server := socketio.NewServer(&engineio.Options{
 		SessionIDGenerator: models.UIDGenerator{},
-
 	})
 
-
 	server.OnConnect("/", func(s socketio.Conn) error {
-
-
 		s.SetContext("")
 		log.Println("connected:", s.ID())
 		return nil
 	})
 
-	server.OnEvent("/","join", func(s socketio.Conn, msg string) string{
+	server.OnEvent("/","join", func(s socketio.Conn, msg string){
 		s.Join(msg)
-		redisProvider.HashMSet(context.Background(),msg, map[string]interface{}{cast.ToString(s.ID()):cast.ToString(s.ID())})
-		  //s.SetContext("加入聊天室成功...")
-		return "加入聊天室 "+msg
-	})
-
-	server.OnEvent("/chat", "msg", func(s socketio.Conn, msg string) string {
 		s.SetContext(msg)
-		return "recv " + msg
+		redisProvider.HashMSet(context.Background(),msg, map[string]interface{}{cast.ToString(s.ID()):cast.ToString(s.ID())})
+		server.BroadcastToRoom("/",msg,"join_msg",cast.ToString(s.ID()))
+	})
+
+	server.OnEvent("/", "send_to_group", func(s socketio.Conn, req models.SendToGroupRequest)  {
+		s.SetContext(req)
+
+		server.BroadcastToRoom("/",req.GroupID,"get_group_msg",models.GroupMsgDTO{
+			Msg: req.Msg,
+			UserID: cast.ToString(s.ID()),
+		})
 	})
 
 
-	server.OnEvent("/","getGroupNumber",func(s socketio.Conn, msg string)string {
+	server.OnEvent("/","get_group_member_count",func(s socketio.Conn, req models.GroupMemberCountRequest)models.GroupMemberCountDTO {
 
-		 num,_:=redisProvider.HashLen(context.Background(),msg)
-		 return cast.ToString(num)
+		 num,_:=redisProvider.HashLen(context.Background(),req.GroupID)
+		 return models.GroupMemberCountDTO{
+			 Count: num,
+		 }
+
 	})
 
 	server.OnEvent("/", "bye", func(s socketio.Conn) string {
@@ -72,7 +75,9 @@ func main() {
 
 	server.OnDisconnect("/", func(s socketio.Conn, reason string) {
 		//s.Leave()
-		log.Println("closed", reason)
+		g:=s.Context()
+
+		log.Println("closed", g)
 	})
 
 	go func() {

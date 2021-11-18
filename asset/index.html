@@ -5,9 +5,9 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font: 13px Helvetica, Arial; }
-        form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-        form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-        form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+        #frm { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+        #frm input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+        #frm button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
         #messages { list-style-type: none; margin: 0; padding: 0; }
         #messages li { padding: 5px 10px; }
         #messages li:nth-child(odd) { background: #eee; }
@@ -22,43 +22,72 @@
 <body>
 <div id="num_show">当前在线人数:<strong id="p_num"></strong></div>
 <ul id="messages"></ul>
-<form action="">
-    <input id="m" autocomplete="off" /><button>Send</button>
-</form>
+<div id="frm">
+    <input id="m" autocomplete="off" /><button id="send">Send</button>
+</div>
 <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
 
     $(function (){
-        var socket = io();
-        var s2 = io("/chat");
-
-        // socket.on('reply', function(msg){
-        //     $('#messages').append($('<li>').text(msg));
-        // });
 
 
-        socket.emit('join',"lsh-group",function (data){
-            $('#messages').append($('<li>').text('加入聊天室: ' + data));
-        })
+        const socket = io("ws://localhost:8000");
 
-        $('form').submit(function(){
-            s2.emit('msg', $('#m').val(), function(data){
-                $('#messages').append($('<li>').text('ACK CALLBACK: ' + data));
-            });
-
-            socket.emit('notice', $('#m').val());
-
-            $('#m').val('');
-            return false;
+        socket.on("connect", () => {
+            socket.emit('join',"lsh-group",function (data){
+                $('#messages').append($('<li>').text('加入聊天室: ' + data));
+            })
         });
 
+        socket.on("join_msg",(data)=>{
+            $('#messages').append($('<li>').text('加入聊天室: ' + data));
+        });
+
+        socket.on("get_group_msg",(data)=>{
+            $('#messages').append($('<li>').html("用户:"+data.user_id+"--Say:"+data.msg));
+        })
+
+
+
+
+        $("#send").click(function (){
+
+
+            var req={
+
+                group_id:"lsh-group",
+                msg:$('#m').val(),
+            }
+
+
+
+            socket.emit('send_to_group',req, function(data){
+                $('#messages').append($('<li>').html("用户:"+data.user_id+"say:"+data.msg));
+            });
+        })
+
+
+        // $('form').submit(function(){
+        //     socket.emit('send', $('#m').val(), function(data){
+        //         $('#messages').append($('<li>').text('' + data));
+        //     });
+        //
+        //     socket.emit('notice', $('#m').val());
+        //
+        //     $('#m').val('');
+        //     return false;
+        // });
+
         setInterval(function (){
-            socket.emit('getGroupNumber',"lsh-group",function (data){
-                //$('#messages').append($('<li>').text('人数: ' + data));
-                $("#p_num").text(data);
+
+            var req={
+                group_id:"lsh-group"
+            }
+            socket.emit('get_group_member_count',req,function (data){
+                $("#p_num").text(data.count);
             })
-        },1000)
+        },5000)
     })
 
 </script>
