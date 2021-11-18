@@ -24,6 +24,7 @@ func main() {
 		Addr: ":6379",
 		Tag:"Simple",
 	})
+
 	var redisProvider=xredis.RedisFatory.Client("Simple")
 
 	server := socketio.NewServer(&engineio.Options{
@@ -31,7 +32,6 @@ func main() {
 	})
 
 	server.OnConnect("/", func(s socketio.Conn) error {
-		s.SetContext("")
 		log.Println("connected:", s.ID())
 		return nil
 	})
@@ -41,6 +41,7 @@ func main() {
 		s.SetContext(msg)
 		redisProvider.HashMSet(context.Background(),msg, map[string]interface{}{cast.ToString(s.ID()):cast.ToString(s.ID())})
 		server.BroadcastToRoom("/",msg,"join_msg",cast.ToString(s.ID()))
+
 	})
 
 	server.OnEvent("/", "send_to_group", func(s socketio.Conn, req models.SendToGroupRequest)  {
@@ -70,13 +71,15 @@ func main() {
 	})
 
 	server.OnError("/", func(s socketio.Conn, e error) {
+		s.LeaveAll()
 		log.Println("meet error:", e)
 	})
 
 	server.OnDisconnect("/", func(s socketio.Conn, reason string) {
 		//s.Leave()
 		g:=s.Context()
-
+        s.Close()
+		s.LeaveAll()
 		log.Println("closed", g)
 	})
 

@@ -32,7 +32,8 @@
     $(function (){
 
 
-        const socket = io("ws://180.76.103.137");
+         //const socket = io("http://localhost:8000");
+        const socket = io("http://180.76.103.137");
 
         socket.on("connect", () => {
             socket.emit('join',"lsh-group",function (data){
@@ -42,10 +43,20 @@
 
         socket.on("join_msg",(data)=>{
             $('#messages').append($('<li>').text('加入聊天室: ' + data));
+            var msgchilds=$("#messages").children("li");
+            if(msgchilds.length>20){
+                $("#messages li:eq("+1+")").remove()
+            }
+
         });
 
         socket.on("get_group_msg",(data)=>{
+            //设置满屏限制
             $('#messages').append($('<li>').html("用户:"+data.user_id+"--Say:"+data.msg));
+            var msgchilds=$("#messages").children("li");
+            if(msgchilds.length>20){
+                $("#messages li:eq("+1+")").remove()
+            }
         })
 
 
